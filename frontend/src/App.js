@@ -1,40 +1,48 @@
 import "./App.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link
+} from "react-router-dom";
+import Edit from "./Edit";
 function App() {
+  return (
+    <Router>
+      <Switch>
+        <Route exact path="/" component={Home}>
+        </Route>
+        <Route exact path="/edit/:id">
+          <Edit />
+        </Route>
+      </Switch>
+    </Router>
+  );
+}
+
+function Home() {
   const [groups, setGroups] = useState("");
   const [newGroup, setNewGroup] = useState("");
-  const [added, setAdded] = useState(false);
-  const [editGroup, setEditGroup] = useState({ id: "", name: "" });
-  useEffect(
-    () =>
-      axios
-        .get("http://localhost:8000/groups/")
-        .then((response) => setGroups(response.data))
-        .catch((error) => console.error(error)),
-    [added]
-  );
+  const fetchDataFromBackend = () => axios
+    .get("http://localhost:8000/groups/")
+    .then((response) => setGroups(response.data))
+    .catch((error) => console.error(error))
+  useEffect(fetchDataFromBackend, []);
   const handleNewGroup = () =>
     axios
       .post("http://localhost:8000/groups/", { name: newGroup })
-      .then((response) => setAdded(!added))
-      .catch((error) => console.error(error));
-
-  const handleUpdateGroup = () =>
-    axios
-      .put("http://localhost:8000/groups/" + String(editGroup.id) + "/", {
-        name: editGroup.name,
-      })
-      .then((response) => setAdded(!added))
+      .then((response) => fetchDataFromBackend())
       .catch((error) => console.error(error));
 
   const handleDeleteGroup = (id) =>
     axios
       .delete("http://localhost:8000/groups/" + String(id) + "/")
-      .then((response) => setAdded(!added))
+      .then((response) => fetchDataFromBackend())
       .catch((error) => console.error(error));
-
   return (
+    // This can be refactored to another file called Home.js, I'm just lazy to do it. 
     <div className="App">
       <div className="form">
         <input
@@ -51,26 +59,11 @@ function App() {
             <li key={group.id}>
               {group.name} -{" "}
               <button onClick={() => handleDeleteGroup(group.id)}>X</button>
+              <Link to={`/edit/` + group.id}><button>Update</button></Link>
             </li>
           ))}
       </ul>
-      <div className="form">
-        <input
-          type="text"
-          placeholder="Enter ID to edit."
-          onChange={(e) => setEditGroup({ ...editGroup, id: e.target.value })}
-          value={editGroup.id}
-        />
-        <input
-          type="text"
-          placeholder="Edit group!"
-          onChange={(e) => setEditGroup({ ...editGroup, name: e.target.value })}
-          value={editGroup.name}
-        />
-        <button onClick={() => handleUpdateGroup()}>Update</button>
-      </div>
-    </div>
-  );
+    </div>)
 }
 
 export default App;
