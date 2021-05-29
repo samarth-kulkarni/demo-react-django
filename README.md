@@ -11,6 +11,7 @@
 3. Migrate the migrations on Django:
       - `cd backend && python manage.py migrate`
 4. Start the server:
+NOTE: Both servers need to be running at the same time.
     - For Django:
       - `cd backend && python manage.py runserver`
     - For React:
